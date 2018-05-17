@@ -64,6 +64,26 @@ public class AES {
     };
 
     /**
+     * matrix used in max columns
+     */
+    private static final byte[][] MAX_COLUMN_MATRIX = {
+            {0x02, 0x03, 0x01, 0x01},
+            {0x01, 0x02, 0x03, 0x01},
+            {0x01, 0x01, 0x02, 0x03},
+            {0x03, 0x01, 0x01, 0x02}
+    };
+
+    /**
+     * matrix used in inverse max columns
+     */
+    private static final byte[][] INVERSE_MAX_COLUMN_MATRIX = {
+            {0x0E, 0x0B, 0x0D, 0x09},
+            {0x09, 0x0E, 0x0B, 0x0D},
+            {0x0D, 0x09, 0x0E, 0x0B},
+            {0x0B, 0x0D, 0x09, 0x0E}
+    };
+
+    /**
      * GF(2^8)域上的乘法
      * @param b1
      * @param b2
@@ -117,7 +137,7 @@ public class AES {
      * shift rows step
      * @param input
      * @param forward 1 if forward
-     *                -1 if reverse
+     *                -1 if inverse
      */
     private static void shiftRows(byte[][] input, int forward) {
         for (int i = 1; i < input.length; i++) {
@@ -139,6 +159,24 @@ public class AES {
         return output;
     }
 
+    /**
+     * max column step
+     * @param input
+     * @param matrix MAX_COLUMN_MATRIX if performs max columns
+     *               INVERSE_MAX_COLUMN_MATRIX if performs inverse max columns
+     */
+    private static byte[][] maxColumns(byte[][] input, byte[][] matrix) {
+        byte[][] output = new byte[input.length][input[0].length];
+        for (int row = 0; row < output.length; row++) {
+            for (int column = 0; column < output[0].length; column++) {
+                for (int j = 0; j < input[0].length; j++) {
+                    output[row][column] ^= gfMul(input[row][j], matrix[j][column]);
+                }
+            }
+        }
+        return output;
+    }
+
 
 
     private static void printByteMatrix(byte[][] matrix) {
@@ -151,11 +189,18 @@ public class AES {
     }
 
     public static void main(String[] args) {
+//        byte[][] input = {
+//                {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
+//                {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
+//                {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
+//                {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
+//        };
+
         byte[][] input = {
-                {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
-                {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
-                {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
-                {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
+                {(byte) 0xC9, (byte) 0xE5, (byte) 0xFD,(byte) 0x2B},
+                {0x7A, (byte) 0xF2, 0x78, 0x6E},
+                {0x63, (byte)0x9C, 0x26, 0x67},
+                {(byte) 0xB0,(byte) 0xA7, (byte) 0x82, (byte) 0xE5}
         };
 
 //        byte[][] output = substitute(input, S);
@@ -166,7 +211,8 @@ public class AES {
 //
 //        shiftRows(output, -1);
 //        printByteMatrix(output);
-        byte b1 = 0x02, b2 = (byte) 0x87;
-        System.out.println(Integer.toHexString(gfMul(b1, b2) & 0xFF));
+
+        byte[][] output = maxColumns(input, MAX_COLUMN_MATRIX);
+        printByteMatrix(output);
     }
 }
