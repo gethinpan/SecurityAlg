@@ -64,6 +64,14 @@ public class AES {
     };
 
     /**
+     * Round constant
+     * first element is unused
+     */
+    private static final byte[] RCON = {
+            (byte) 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, (byte) 0x80, 0x1b, 0x36
+    };
+
+    /**
      * matrix used in max columns
      */
     private static final byte[][] MAX_COLUMN_MATRIX = {
@@ -125,12 +133,22 @@ public class AES {
         byte[][] output = new byte[input.length][input[0].length];
         for (int i = 0; i < input.length; i++) {
             for (int j = 0; j < input[0].length; j++) {
-                int row = (input[i][j] & HIGH_FOUR_BITS_MASK) >> SHIFT_FOUR_BITS;
-                int column = input[i][j] & LOW_FOUR_BITS_MASK;
-                output[i][j] = (byte) box[row][column];
+                output[i][j] = subByte(input[i][j], box);
             }
         }
         return output;
+    }
+
+    /**
+     * 单字节的替换函数
+     * @param input
+     * @param box
+     * @return
+     */
+    private static byte subByte(byte input, int[][] box) {
+        int row = (input & HIGH_FOUR_BITS_MASK) >> SHIFT_FOUR_BITS;
+        int column = input & LOW_FOUR_BITS_MASK;
+        return (byte) box[row][column];
     }
 
     /**
@@ -170,14 +188,74 @@ public class AES {
         for (int row = 0; row < output.length; row++) {
             for (int column = 0; column < output[0].length; column++) {
                 for (int j = 0; j < input[0].length; j++) {
-                    output[row][column] ^= gfMul(input[row][j], matrix[j][column]);
+                    output[row][column] ^= gfMul(matrix[row][j], input[j][column]);
                 }
             }
         }
         return output;
     }
 
+    /**
+     * AddRoundKey step
+     * @param state
+     * @param subkey
+     * @return
+     */
+    private static byte[][] addRoundKey(byte[][] state, byte[][]subkey) {
+        byte[][] output = new byte[state.length][state[0].length];
+        for (int row = 0; row < state.length; row++) {
+            for (int column = 0; column < state[0].length; column++) {
+                output[row][column] = (byte) (state[row][column] ^ subkey[row][column]);
+            }
+        }
+        return output;
+    }
 
+    /**
+     * key expansion step
+     * @param iniKey 16 bytes initial key
+     * @return 11 round sub key
+     */
+    private static byte[][][] keyExpansions(byte[] iniKey) {
+        byte[][][] subkey = new byte[11][4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                subkey[0][j][i] = iniKey[4 * i + j];
+            }
+        }
+        for (int round = 1; round < 11; round++) {
+            byte[] chosenWord = new byte[4];
+            for (int i = 0; i < 4; i++) {
+                chosenWord[i] = subkey[round - 1][i][3];
+            }
+            gFunction(chosenWord, round);
+            for (int i = 0; i < 4; i++) {
+                subkey[round][i][0] = (byte) (subkey[round - 1][i][0] ^ chosenWord[i]);
+            }
+
+            for (int wordIndex = 1; wordIndex < 4; wordIndex++) {
+                for (int byteIndex = 0; byteIndex < 4; byteIndex++) {
+                    subkey[round][wordIndex][byteIndex] =
+                            (byte) (subkey[round - 1][wordIndex][byteIndex] ^ subkey[round][wordIndex - 1][byteIndex]);
+                }
+            }
+        }
+        return subkey;
+    }
+
+    private static void gFunction(byte[] chosenWord, int round) {
+        // cycle left shift
+        chosenWord = cycleShift(chosenWord, 1);
+        // S-Box
+        for (int i = 0; i < 4; i++) {
+            chosenWord[i] = subByte(chosenWord[i], S);
+        }
+        // xor with round constant
+        chosenWord[0] = (byte) (chosenWord[0] ^ RCON[round]);
+        for (int i = 1; i < 4; i++) {
+            chosenWord[i] = (byte) (chosenWord[i] ^ 0x00);
+        }
+    }
 
     private static void printByteMatrix(byte[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
@@ -189,30 +267,34 @@ public class AES {
     }
 
     public static void main(String[] args) {
-//        byte[][] input = {
-//                {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
-//                {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
-//                {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
-//                {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
-//        };
-
         byte[][] input = {
-                {(byte) 0xC9, (byte) 0xE5, (byte) 0xFD,(byte) 0x2B},
-                {0x7A, (byte) 0xF2, 0x78, 0x6E},
-                {0x63, (byte)0x9C, 0x26, 0x67},
-                {(byte) 0xB0,(byte) 0xA7, (byte) 0x82, (byte) 0xE5}
+                {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
+                {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
+                {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
+                {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
         };
 
-//        byte[][] output = substitute(input, S);
-//        printByteMatrix(output);
-//
-//        shiftRows(output, 1);
-//        printByteMatrix(output);
-//
-//        shiftRows(output, -1);
-//        printByteMatrix(output);
+        byte[][] subkey = {
+                {(byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57},
+                {0x77, (byte) 0xFA, (byte) 0xD1, 0x5C},
+                {0x66, (byte) 0xDC, 0x29, 0x00},
+                {(byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A}
+        };
 
-        byte[][] output = maxColumns(input, MAX_COLUMN_MATRIX);
+        byte[][] output = substitute(input, S);
+        printByteMatrix(output);
+
+        System.out.println();
+
+        shiftRows(output, 1);
+        printByteMatrix(output);
+
+        System.out.println();
+        output = maxColumns(output, MAX_COLUMN_MATRIX);
+        printByteMatrix(output);
+
+        System.out.println();
+        output = addRoundKey(output, subkey);
         printByteMatrix(output);
     }
 }
