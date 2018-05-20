@@ -20,6 +20,12 @@ public class AES {
     private static final int BITS_OF_BYTE = 8;
 
     /**
+     * Mode constants
+     */
+    private static final String ENCRYPT = "e";
+    private static final String DECRYPT = "d";
+
+    /**
      * S-Box
      */
     private static final int[][] S = {
@@ -72,9 +78,9 @@ public class AES {
     };
 
     /**
-     * matrix used in max columns
+     * matrix used in mix columns
      */
-    private static final byte[][] MAX_COLUMN_MATRIX = {
+    private static final byte[][] MIX_COLUMN_MATRIX = {
             {0x02, 0x03, 0x01, 0x01},
             {0x01, 0x02, 0x03, 0x01},
             {0x01, 0x01, 0x02, 0x03},
@@ -82,9 +88,9 @@ public class AES {
     };
 
     /**
-     * matrix used in inverse max columns
+     * matrix used in inverse mix columns
      */
-    private static final byte[][] INVERSE_MAX_COLUMN_MATRIX = {
+    private static final byte[][] INVERSE_MIX_COLUMN_MATRIX = {
             {0x0E, 0x0B, 0x0D, 0x09},
             {0x09, 0x0E, 0x0B, 0x0D},
             {0x0D, 0x09, 0x0E, 0x0B},
@@ -178,12 +184,12 @@ public class AES {
     }
 
     /**
-     * max column step
+     * mix column step
      * @param input
-     * @param matrix MAX_COLUMN_MATRIX if performs max columns
-     *               INVERSE_MAX_COLUMN_MATRIX if performs inverse max columns
+     * @param matrix MIX_COLUMN_MATRIX if performs mix columns
+     *               INVERSE_MIX_COLUMN_MATRIX if performs inverse mix columns
      */
-    private static byte[][] maxColumns(byte[][] input, byte[][] matrix) {
+    private static byte[][] mixColumns(byte[][] input, byte[][] matrix) {
         byte[][] output = new byte[input.length][input[0].length];
         for (int row = 0; row < output.length; row++) {
             for (int column = 0; column < output[0].length; column++) {
@@ -228,33 +234,115 @@ public class AES {
             for (int i = 0; i < 4; i++) {
                 chosenWord[i] = subkey[round - 1][i][3];
             }
-            gFunction(chosenWord, round);
+            chosenWord = gFunction(chosenWord, round);
             for (int i = 0; i < 4; i++) {
                 subkey[round][i][0] = (byte) (subkey[round - 1][i][0] ^ chosenWord[i]);
             }
 
             for (int wordIndex = 1; wordIndex < 4; wordIndex++) {
                 for (int byteIndex = 0; byteIndex < 4; byteIndex++) {
-                    subkey[round][wordIndex][byteIndex] =
-                            (byte) (subkey[round - 1][wordIndex][byteIndex] ^ subkey[round][wordIndex - 1][byteIndex]);
+                    subkey[round][byteIndex][wordIndex] =
+                            (byte) (subkey[round - 1][byteIndex][wordIndex] ^ subkey[round][byteIndex][wordIndex - 1]);
                 }
             }
         }
         return subkey;
     }
 
-    private static void gFunction(byte[] chosenWord, int round) {
+    private static byte[] gFunction(byte[] chosenWord, int round) {
         // cycle left shift
-        chosenWord = cycleShift(chosenWord, 1);
+        byte[] output = cycleShift(chosenWord, 1);
         // S-Box
         for (int i = 0; i < 4; i++) {
-            chosenWord[i] = subByte(chosenWord[i], S);
+            output[i] = subByte(output[i], S);
         }
         // xor with round constant
-        chosenWord[0] = (byte) (chosenWord[0] ^ RCON[round]);
-        for (int i = 1; i < 4; i++) {
-            chosenWord[i] = (byte) (chosenWord[i] ^ 0x00);
+        output[0] = (byte) (output[0] ^ RCON[round]);
+        return output;
+    }
+
+    /**
+     * 对16 bytes的消息块进行aes加密
+     * @param block  16 bytes消息块
+     * @param subkey 子密钥
+     * @return
+     */
+    private static byte[] encryptBlock(byte[] block, byte[][][] subkey) {
+        byte[] output = new byte[block.length];
+        byte[][] state = new byte[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[j][i] = block[4 * i + j];
+            }
         }
+        int roundCount = 0;
+        // initial add round key
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] = (byte) (state[i][j] ^ subkey[roundCount][i][j]);
+            }
+        }
+        roundCount++;
+        for (; roundCount < 10; roundCount++) {
+            // substitute bytes
+            state = substitute(state, S);
+            // shift rows
+            shiftRows(state, 1);
+            // mix columns
+            state = mixColumns(state, MIX_COLUMN_MATRIX);
+            //add round keys
+            state = addRoundKey(state, subkey[roundCount]);
+        }
+        // final transfer
+        state = substitute(state, S);
+        shiftRows(state, 1);
+        state = addRoundKey(state, subkey[roundCount]);
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                output[4 * i + j] = state[j][i];
+            }
+        }
+        return output;
+    }
+
+    private static byte[] decryptBlock(byte[] block, byte[][][] subkey) {
+        byte[] output = new byte[block.length];
+        byte[][] state = new byte[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[j][i] = block[4 * i + j];
+            }
+        }
+        int roundCount = 10;
+        // initial add round key
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                state[i][j] = (byte) (state[i][j] ^ subkey[roundCount][i][j]);
+            }
+        }
+        roundCount--;
+        for (; roundCount > 0; roundCount--) {
+            // inverse shift rows
+            shiftRows(state, -1);
+            // inverse substitute bytes
+            state = substitute(state, IS);
+            // add round keys
+            state = addRoundKey(state, subkey[roundCount]);
+            // inverse mix column
+            state = mixColumns(state, INVERSE_MIX_COLUMN_MATRIX);
+        }
+        // final transfer
+        shiftRows(state, -1);
+        state = substitute(state, IS);
+        state = addRoundKey(state, subkey[roundCount]);
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                output[4 * i + j] = state[j][i];
+            }
+        }
+        return output;
     }
 
     private static void printByteMatrix(byte[][] matrix) {
@@ -266,6 +354,13 @@ public class AES {
         }
     }
 
+    private static void printByteArray(byte[] array) {
+        for (int i = 0; i < array.length; i++) {
+            System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
+        }
+        System.out.println();
+    }
+
     public static void main(String[] args) {
         byte[][] input = {
                 {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
@@ -274,27 +369,42 @@ public class AES {
                 {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
         };
 
-        byte[][] subkey = {
-                {(byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57},
-                {0x77, (byte) 0xFA, (byte) 0xD1, 0x5C},
-                {0x66, (byte) 0xDC, 0x29, 0x00},
-                {(byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A}
+        byte[] message = {
+                (byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57,
+                0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
+                0x66, (byte) 0xDC, 0x29, 0x00,
+                (byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A
         };
 
-        byte[][] output = substitute(input, S);
-        printByteMatrix(output);
+        byte[] inikey = {
+                (byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57,
+                0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
+                0x66, (byte) 0xDC, 0x29, 0x00,
+                (byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A
+        };
 
-        System.out.println();
+        byte[][][] subkey = keyExpansions(inikey);
 
-        shiftRows(output, 1);
-        printByteMatrix(output);
+        byte[] output = encryptBlock(message, subkey);
+        printByteArray(output);
 
-        System.out.println();
-        output = maxColumns(output, MAX_COLUMN_MATRIX);
-        printByteMatrix(output);
+        output = decryptBlock(output, subkey);
+        printByteArray(output);
 
-        System.out.println();
-        output = addRoundKey(output, subkey);
-        printByteMatrix(output);
+//        byte[][] output = substitute(input, S);
+//        printByteMatrix(output);
+//
+//        System.out.println();
+//
+//        shiftRows(output, 1);
+//        printByteMatrix(output);
+//
+//        System.out.println();
+//        output = maxColumns(output, MAX_COLUMN_MATRIX);
+//        printByteMatrix(output);
+//
+//        System.out.println();
+//        output = addRoundKey(output, subkey);
+//        printByteMatrix(output);
     }
 }

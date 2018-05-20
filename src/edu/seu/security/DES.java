@@ -434,7 +434,7 @@ public class DES {
      * @param subKey 子密钥
      * @return 加解密后的消息块
      */
-    private static byte[] processBlock(byte[] block, byte[][] subKey, String mode) {
+    private static byte[] processBlock(byte[] block, byte[][] subkey, String mode) {
         // initial permutation
         byte[] processedBlock = permute(block, IP);
 
@@ -459,7 +459,7 @@ public class DES {
         for (int i = start; i >= 0 && i < 16; i += step) {
             leftNext = right;
             byte[] expandRight = permute(right, EP);
-            expandRight = XOR(expandRight, subKey[i]);
+            expandRight = XOR(expandRight, subkey[i]);
             right = sBox(expandRight);
             right = permute(right, P);
             rightNext = XOR(left, right);
@@ -473,6 +473,14 @@ public class DES {
         }
 
         return permute(processedBlock, IIP);
+    }
+
+    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, ENCRYPT);
+    }
+
+    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, DECRYPT);
     }
 
     private static void printBytes(byte[] input) {
