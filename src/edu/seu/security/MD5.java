@@ -1,6 +1,5 @@
 package edu.seu.security;
 
-import java.nio.ByteOrder;
 import java.security.MessageDigest;
 
 /**
@@ -11,7 +10,7 @@ import java.security.MessageDigest;
  */
 public class MD5 {
     // magic initialization constants
-    private static final int INIT_A = 0x67452310;
+    private static final int INIT_A = 0x67452301;
     private static final int INIT_B = 0xefcdab89;
     private static final int INIT_C = 0x98badcfe;
     private static final int INIT_D = 0x10325476;
@@ -56,7 +55,7 @@ public class MD5 {
     }
 
     public MD5() {
-        bytesProcessed = -1;
+        this.reset();
     }
 
     private void reset() {
@@ -124,6 +123,10 @@ public class MD5 {
         return a + b;
     }
 
+    /**
+     *md5的最后一部操作，进行填充，加入长度，并返回digest
+     * @return
+     */
     public byte[] getDigest() {
         byte[] digest = new byte[16];
 
@@ -145,6 +148,12 @@ public class MD5 {
         update(input, 0, input.length);
     }
 
+    /**
+     * 内部update函数，对输入的byte数组offset后（包括）长度为length的部分进行处理
+     * @param input
+     * @param offset
+     * @param length
+     */
     private void update(byte[] input, int offset, int length) {
         if (length == 0) {
             return;
