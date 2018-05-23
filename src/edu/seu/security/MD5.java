@@ -1,6 +1,7 @@
 package edu.seu.security;
 
 import java.nio.ByteOrder;
+import java.security.MessageDigest;
 
 /**
  * MD5 hash算法
@@ -46,6 +47,17 @@ public class MD5 {
     private int bufferOffset;
     // 临时缓存
     private int[] x = new int[16];
+    // 填充使用的字节数组
+    private static final byte[] padding;
+
+    static {
+        padding = new byte[64];
+        padding[0] = (byte) 0x80;
+    }
+
+    public MD5() {
+        bytesProcessed = -1;
+    }
 
     private void reset() {
         state[0] = INIT_A;
@@ -113,13 +125,27 @@ public class MD5 {
     }
 
     public byte[] getDigest() {
+        byte[] digest = new byte[16];
+
         long bitsProcessed = bytesProcessed << 3;
 
         int index = (int) bytesProcessed & 0x3f;
-        int pedLen = (index < 56) ? (56 - index) : (120 - index);
+        int padLen = (index < 56) ? (56 - index) : (120 - index);
+
+        update(padding, 0, padLen);
+
+        l2bLittle(bitsProcessed, buffer, 56);
+        compress(buffer, 0);
+
+        i2bLittle(state, 0, digest, 0, 16);
+        return digest;
     }
 
-    public void update(byte[] input, int offset, int length) {
+    public void update(byte[] input) {
+        update(input, 0, input.length);
+    }
+
+    private void update(byte[] input, int offset, int length) {
         if (length == 0) {
             return;
         }
@@ -157,7 +183,7 @@ public class MD5 {
     }
 
     private void compress(byte[] input, int offset) {
-        b2iLittle(input, x, offset);
+        b2iLittle(input, offset, x, 0, x.length);
 
         int a = state[0];
         int b = state[1];
@@ -243,38 +269,73 @@ public class MD5 {
     }
 
     /**
-     * 将long类型转换为小端序的8-byte数组
+     * 将long类型转换为小端序的8-byte数组, 存储在buffer中
      * @param input
-     * @param output
+     * @param buffer
+     * @param offset
      */
-    private static void l2bLittle(long input, byte[] output) {
+    private static void l2bLittle(long input, byte[] buffer, int offset) {
         int[] count = new int[2];
         count[0] = (int) input;
         count[1] = (int) input >>> 32;
-        for (int i = 0, j = 0; j < 8; i++, j += 4) {
-            output[j] = (byte) (count[i] & 0xff);
-            output[j + 1] = (byte) ((count[i] >>> 8) & 0xff);
-            output[j + 2] = (byte) ((count[i] >>> 16) & 0xff);
-            output[j + 3] = (byte) ((count[i] >>> 24) & 0xff);
+        for (int i = 0, j = offset; j < (offset + 8); i++, j += 4) {
+            buffer[j] = (byte) (count[i] & 0xff);
+            buffer[j + 1] = (byte) ((count[i] >>> 8) & 0xff);
+            buffer[j + 2] = (byte) ((count[i] >>> 16) & 0xff);
+            buffer[j + 3] = (byte) ((count[i] >>> 24) & 0xff);
         }
     }
 
     /**
-     * 将offset之后（含offset）的64-byte转为16个4-byte长的word（即int）,小端序
-     * @param input
-     * @param output
-     * @param offset
+     * 将int数组转为小端序的byte数组
+     * @param input int数组
+     * @param inOfs int数组的偏移
+     * @param output byte数组
+     * @param outOfs byte数组偏移
+     * @param length 需转换部分的字节长度
      */
-    private static void b2iLittle(byte[] input, int[] output, int offset) {
-        for (int i = 0, j = offset; j < offset + 64; i++, j += 4) {
+    private static void i2bLittle(int[] input, int inOfs, byte[] output, int outOfs, int length) {
+        length += outOfs;
+        while (outOfs < length) {
+            int i = input[inOfs++];
+            output[outOfs++] = (byte) i;
+            output[outOfs++] = (byte) (i >> 8);
+            output[outOfs++] = (byte) (i >> 16);
+            output[outOfs++] = (byte) (i >> 24);
+        }
+    }
+
+    /**
+     *将byte数组转为int数组，字节序为小端序
+     * @param input 输入字节数组
+     * @param inOfs 字节数组偏移
+     * @param output 输出int数组
+     * @param outOfs int数组偏移
+     * @param length 转换部分的int长度
+     */
+    private static void b2iLittle(byte[] input, int inOfs, int[] output, int outOfs, int length) {
+        for (int i = outOfs, j = inOfs; i < (outOfs + length); i++, j += 4) {
             output[i] = ((input[j] & 0xff)) | ((input[j + 1] & 0xff) << 8) |
                     ((input[j + 2] & 0xff) << 16) | ((input[j + 3] & 0xff) << 24);
         }
     }
 
-    public static void main(String[] args) {
-        ByteOrder byteOrder = ByteOrder.nativeOrder();
-        System.out.println(byteOrder);
+    private static void printByteArray(byte[] array) {
+        for (int i = 0; i < array.length; i++) {
+            System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) throws Exception{
+        String s = "";
+        MD5 md5 = new MD5();
+        md5.update(s.getBytes());
+        printByteArray(md5.getDigest());
+
+        MessageDigest smd5= MessageDigest.getInstance("md5");
+        smd5.update(s.getBytes());
+        printByteArray(smd5.digest());
     }
 }
 
