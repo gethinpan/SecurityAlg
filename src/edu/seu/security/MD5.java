@@ -39,7 +39,7 @@ public class MD5 {
     // 计算使用的四个寄存器值
     private int state[] = new int[4];
     // 已处理的字节数
-    private long processedLength;
+    private long bytesProcessed;
     // 字节缓存器
     private byte[] buffer = new byte[BLOCK_SIZE];
     // 字节缓存器已用字节偏移量，即已用字节数
@@ -52,7 +52,7 @@ public class MD5 {
         state[1] = INIT_B;
         state[2] = INIT_C;
         state[3] = INIT_D;
-        processedLength = 0;
+        bytesProcessed = 0;
     }
 
     /**
@@ -112,17 +112,24 @@ public class MD5 {
         return a + b;
     }
 
+    public byte[] getDigest() {
+        long bitsProcessed = bytesProcessed << 3;
+
+        int index = (int) bytesProcessed & 0x3f;
+        int pedLen = (index < 56) ? (56 - index) : (120 - index);
+    }
+
     public void update(byte[] input, int offset, int length) {
         if (length == 0) {
             return;
         }
-        if (length < 0 || offset < 0 || ((input.length - length) < offset）) {
+        if (length < 0 || offset < 0 || ((input.length - length) < offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        if (processedLength < 0) {
+        if (bytesProcessed < 0) {
             reset();
         }
-        processedLength += length;
+        bytesProcessed += length;
         if (bufferOffset != 0) {
             int n = Math.min(length, buffer.length - bufferOffset);
             System.arraycopy(input, offset, buffer, bufferOffset, n);
@@ -135,15 +142,22 @@ public class MD5 {
             }
         }
         if (length > BLOCK_SIZE) {
-
+            int i;
+            for (i = 0; i < (length / BLOCK_SIZE); i++) {
+                compress(input, offset + i * BLOCK_SIZE);
+            }
+            int remainderLen = length - (i - 1) * BLOCK_SIZE;
+            System.arraycopy(input, offset + (i - 1) * BLOCK_SIZE, buffer, 0, remainderLen);
+            bufferOffset = remainderLen;
         }
         if (length > 0) {
-
+            System.arraycopy(input, offset, buffer, 0, length);
+            bufferOffset = length;
         }
     }
 
     private void compress(byte[] input, int offset) {
-        decode(input, x, offset);
+        b2iLittle(input, x, offset);
 
         int a = state[0];
         int b = state[1];
@@ -228,6 +242,22 @@ public class MD5 {
         state[3] += d;
     }
 
+    /**
+     * 将long类型转换为小端序的8-byte数组
+     * @param input
+     * @param output
+     */
+    private static void l2bLittle(long input, byte[] output) {
+        int[] count = new int[2];
+        count[0] = (int) input;
+        count[1] = (int) input >>> 32;
+        for (int i = 0, j = 0; j < 8; i++, j += 4) {
+            output[j] = (byte) (count[i] & 0xff);
+            output[j + 1] = (byte) ((count[i] >>> 8) & 0xff);
+            output[j + 2] = (byte) ((count[i] >>> 16) & 0xff);
+            output[j + 3] = (byte) ((count[i] >>> 24) & 0xff);
+        }
+    }
 
     /**
      * 将offset之后（含offset）的64-byte转为16个4-byte长的word（即int）,小端序
@@ -235,7 +265,7 @@ public class MD5 {
      * @param output
      * @param offset
      */
-    private void decode(byte[] input, int[] output, int offset) {
+    private static void b2iLittle(byte[] input, int[] output, int offset) {
         for (int i = 0, j = offset; j < offset + 64; i++, j += 4) {
             output[i] = ((input[j] & 0xff)) | ((input[j + 1] & 0xff) << 8) |
                     ((input[j + 2] & 0xff) << 16) | ((input[j + 3] & 0xff) << 24);
