@@ -2,6 +2,7 @@ package edu.seu.security;
 
 /**
  * AES加解密算法
+ *
  * @author Pan Guixin
  * @date 2018-05-16
  */
@@ -99,6 +100,7 @@ public class AES {
 
     /**
      * GF(2^8)域上的乘法
+     *
      * @param b1
      * @param b2
      * @return
@@ -107,7 +109,7 @@ public class AES {
         if ((b1 == 0) || (b2 == 0)) {
             return 0;
         }
-        int i1 = b1 & 0xFF, i2= b2 & 0xFF;
+        int i1 = b1 & 0xFF, i2 = b2 & 0xFF;
         if (i1 < i2) {
             int temp = i1;
             i1 = i2;
@@ -131,6 +133,7 @@ public class AES {
 
     /**
      * substitute operation, performed by S-Box or inverse S-Box in AES
+     *
      * @param input
      * @param box
      * @return
@@ -147,6 +150,7 @@ public class AES {
 
     /**
      * 单字节的替换函数
+     *
      * @param input
      * @param box
      * @return
@@ -159,6 +163,7 @@ public class AES {
 
     /**
      * shift rows step
+     *
      * @param input
      * @param forward 1 if forward
      *                -1 if inverse
@@ -171,6 +176,7 @@ public class AES {
 
     /**
      * 循环移位，以byte为单位操作
+     *
      * @param input
      * @param shiftBytes
      * @return
@@ -185,6 +191,7 @@ public class AES {
 
     /**
      * mix column step
+     *
      * @param input
      * @param matrix MIX_COLUMN_MATRIX if performs mix columns
      *               INVERSE_MIX_COLUMN_MATRIX if performs inverse mix columns
@@ -203,11 +210,12 @@ public class AES {
 
     /**
      * AddRoundKey step
+     *
      * @param state
      * @param subkey
      * @return
      */
-    private static byte[][] addRoundKey(byte[][] state, byte[][]subkey) {
+    private static byte[][] addRoundKey(byte[][] state, byte[][] subkey) {
         byte[][] output = new byte[state.length][state[0].length];
         for (int row = 0; row < state.length; row++) {
             for (int column = 0; column < state[0].length; column++) {
@@ -219,6 +227,7 @@ public class AES {
 
     /**
      * key expansion step
+     *
      * @param iniKey 16 bytes initial key
      * @return 11 round sub key
      */
@@ -263,6 +272,7 @@ public class AES {
 
     /**
      * 对16 bytes的消息块进行aes加密
+     *
      * @param block  16 bytes消息块
      * @param subkey 子密钥
      * @return
@@ -348,7 +358,7 @@ public class AES {
     private static void printByteMatrix(byte[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
-                System.out.print("0x" + Integer.toHexString(matrix[i][j]  & 0xFF) + " ");
+                System.out.print("0x" + Integer.toHexString(matrix[i][j] & 0xFF) + " ");
             }
             System.out.println();
         }
@@ -366,21 +376,21 @@ public class AES {
                 {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
                 {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
                 {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
-                {(byte)0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
+                {(byte) 0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
         };
 
         byte[] message = {
-                (byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57,
+                (byte) 0xAC, (byte) 0x19, (byte) 0x28, (byte) 0x57,
                 0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
                 0x66, (byte) 0xDC, 0x29, 0x00,
-                (byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A
+                (byte) 0xF3, (byte) 0x21, (byte) 0x41, (byte) 0x6A
         };
 
         byte[] inikey = {
-                (byte) 0xAC, (byte) 0x19, (byte) 0x28,(byte) 0x57,
+                (byte) 0xAC, (byte) 0x19, (byte) 0x28, (byte) 0x57,
                 0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
                 0x66, (byte) 0xDC, 0x29, 0x00,
-                (byte) 0xF3,(byte) 0x21, (byte) 0x41, (byte) 0x6A
+                (byte) 0xF3, (byte) 0x21, (byte) 0x41, (byte) 0x6A
         };
 
         byte[][][] subkey = keyExpansions(inikey);

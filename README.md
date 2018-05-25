@@ -1,2 +1,2 @@
 # SecurityAlg
-常见安全加密算法Java实现
+Java实现常见安全算法，包括DES，AES，MD5，SHA，RSA等。

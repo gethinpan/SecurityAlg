@@ -1,5 +1,7 @@
 package edu.seu.security;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.security.MessageDigest;
 
 /**
@@ -58,12 +60,22 @@ public class MD5 {
         this.reset();
     }
 
-    private void reset() {
-        state[0] = INIT_A;
-        state[1] = INIT_B;
-        state[2] = INIT_C;
-        state[3] = INIT_D;
-        bytesProcessed = 0;
+    /**
+     * 将long类型转换为小端序的8-byte数组, 存储在buffer中
+     * @param input
+     * @param buffer
+     * @param offset
+     */
+    private static void l2bLittle(long input, byte[] buffer, int offset) {
+        int[] count = new int[2];
+        count[0] = (int) input;
+        count[1] = (int) (input >>> 32);
+        for (int i = 0, j = offset; j < (offset + 8); i++, j += 4) {
+            buffer[j] = (byte) count[i];
+            buffer[j + 1] = (byte) (count[i] >>> 8);
+            buffer[j + 2] = (byte) (count[i] >>> 16);
+            buffer[j + 3] = (byte) (count[i] >>> 24);
+        }
     }
 
     /**
@@ -123,72 +135,42 @@ public class MD5 {
         return a + b;
     }
 
-    /**
-     *md5的最后一部操作，进行填充，加入长度，并返回digest
-     * @return
-     */
-    public byte[] getDigest() {
-        byte[] digest = new byte[16];
+    public static void main(String[] args) throws Exception{
+        String s = "保证数据的完整性：例如你发送一个100M的文件给你的B，但是你不知道B收到的是否是完整的文件；此时你首先使用摘要算法，" +
+                "如MD5，计算了一个固定长度的摘要，将这个摘要和文件一起发送给B，B接收完文件之后，同样使用MD5计算摘要，如果B计算的结果和你发送给他的摘要结果一致，说明B接收的文件是完整的。";
+        MD5 md5 = new MD5();
+//        md5.update(s.getBytes());
+//        printByteArray(md5.getDigest());
+        File file = new File("C:\\Users\\GethinPan\\Desktop\\rfc1321.pdf");
+        FileInputStream in = new FileInputStream(file);
+        byte[] buffer = new byte[2048];
+        while (in.read(buffer) != -1) {
+            md5.update(buffer);
+        }
+        printByteArray(md5.getDigest());
+        in.close();
 
-        long bitsProcessed = bytesProcessed << 3;
-
-        int index = (int) bytesProcessed & 0x3f;
-        int padLen = (index < 56) ? (56 - index) : (120 - index);
-
-        update(padding, 0, padLen);
-
-        l2bLittle(bitsProcessed, buffer, 56);
-        compress(buffer, 0);
-
-        i2bLittle(state, 0, digest, 0, 16);
-        return digest;
+        MessageDigest smd5= MessageDigest.getInstance("md5");
+//        smd5.update(s.getBytes());
+//        printByteArray(smd5.digest());
+        in = new FileInputStream(file);
+        while (in.read(buffer) != -1) {
+            smd5.update(buffer);
+        }
+        printByteArray(smd5.digest());
     }
 
     public void update(byte[] input) {
         update(input, 0, input.length);
     }
 
-    /**
-     * 内部update函数，对输入的byte数组offset后（包括）长度为length的部分进行处理
-     * @param input
-     * @param offset
-     * @param length
-     */
-    private void update(byte[] input, int offset, int length) {
-        if (length == 0) {
-            return;
-        }
-        if (length < 0 || offset < 0 || ((input.length - length) < offset)) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        if (bytesProcessed < 0) {
-            reset();
-        }
-        bytesProcessed += length;
-        if (bufferOffset != 0) {
-            int n = Math.min(length, buffer.length - bufferOffset);
-            System.arraycopy(input, offset, buffer, bufferOffset, n);
-            offset += n;
-            bufferOffset += n;
-            length -= n;
-            if (bufferOffset >= BLOCK_SIZE) {
-                compress(buffer, 0);
-                bufferOffset = 0;
-            }
-        }
-        if (length > BLOCK_SIZE) {
-            int i;
-            for (i = 0; i < (length / BLOCK_SIZE); i++) {
-                compress(input, offset + i * BLOCK_SIZE);
-            }
-            int remainderLen = length - (i - 1) * BLOCK_SIZE;
-            System.arraycopy(input, offset + (i - 1) * BLOCK_SIZE, buffer, 0, remainderLen);
-            bufferOffset = remainderLen;
-        }
-        if (length > 0) {
-            System.arraycopy(input, offset, buffer, 0, length);
-            bufferOffset = length;
-        }
+    private void reset() {
+        state[0] = INIT_A;
+        state[1] = INIT_B;
+        state[2] = INIT_C;
+        state[3] = INIT_D;
+        bytesProcessed = 0;
+        bufferOffset = 0;
     }
 
     private void compress(byte[] input, int offset) {
@@ -278,21 +260,25 @@ public class MD5 {
     }
 
     /**
-     * 将long类型转换为小端序的8-byte数组, 存储在buffer中
-     * @param input
-     * @param buffer
-     * @param offset
+     *md5的最后一部操作，进行填充，加入长度，并返回digest
+     * @return
      */
-    private static void l2bLittle(long input, byte[] buffer, int offset) {
-        int[] count = new int[2];
-        count[0] = (int) input;
-        count[1] = (int) input >>> 32;
-        for (int i = 0, j = offset; j < (offset + 8); i++, j += 4) {
-            buffer[j] = (byte) (count[i] & 0xff);
-            buffer[j + 1] = (byte) ((count[i] >>> 8) & 0xff);
-            buffer[j + 2] = (byte) ((count[i] >>> 16) & 0xff);
-            buffer[j + 3] = (byte) ((count[i] >>> 24) & 0xff);
-        }
+    public byte[] getDigest() {
+        byte[] digest = new byte[16];
+
+        long bitsProcessed = bytesProcessed << 3;
+
+        int index = (int) bytesProcessed & 0x3f;
+        int padLen = (index < 56) ? (56 - index) : (120 - index);
+
+        update(padding, 0, padLen);
+
+        l2bLittle(bitsProcessed, buffer, 56);
+        compress(buffer, 0);
+
+        i2bLittle(state, 0, digest, 0, 16);
+        reset();
+        return digest;
     }
 
     /**
@@ -336,15 +322,47 @@ public class MD5 {
         System.out.println();
     }
 
-    public static void main(String[] args) throws Exception{
-        String s = "";
-        MD5 md5 = new MD5();
-        md5.update(s.getBytes());
-        printByteArray(md5.getDigest());
-
-        MessageDigest smd5= MessageDigest.getInstance("md5");
-        smd5.update(s.getBytes());
-        printByteArray(smd5.digest());
+    /**
+     * 内部update函数，对输入的byte数组offset后（包括）长度为length的部分进行处理
+     * @param input
+     * @param offset
+     * @param length
+     */
+    private void update(byte[] input, int offset, int length) {
+        if (length == 0) {
+            return;
+        }
+        if (length < 0 || offset < 0 || ((input.length - length) < offset)) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        if (bytesProcessed < 0) {
+            reset();
+        }
+        bytesProcessed += length;
+        if (bufferOffset != 0) {
+            int n = Math.min(length, buffer.length - bufferOffset);
+            System.arraycopy(input, offset, buffer, bufferOffset, n);
+            offset += n;
+            bufferOffset += n;
+            length -= n;
+            if (bufferOffset >= BLOCK_SIZE) {
+                compress(buffer, 0);
+                bufferOffset = 0;
+            }
+        }
+        if (length > BLOCK_SIZE) {
+            int i;
+            for (i = 0; i < (length / BLOCK_SIZE); i++) {
+                compress(input, offset + i * BLOCK_SIZE);
+            }
+            bufferOffset = 0;
+            offset += i * BLOCK_SIZE;
+            length -= i * BLOCK_SIZE;
+        }
+        if (length > 0) {
+            System.arraycopy(input, offset, buffer, bufferOffset, length);
+            bufferOffset = length;
+        }
     }
 }
 

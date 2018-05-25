@@ -261,6 +261,7 @@ public class DES {
 
     /**
      * 对输入的两个字节数组进行异或操作
+     *
      * @param input1
      * @param input2
      * @return
@@ -275,6 +276,7 @@ public class DES {
 
     /**
      * 将输入的字节数组分为相等的两部分,仅限能等分的情况
+     *
      * @param input
      * @return
      */
@@ -337,6 +339,7 @@ public class DES {
 
     /**
      * S-Box 运算
+     *
      * @param input
      * @return
      */
@@ -410,11 +413,12 @@ public class DES {
 
         output[3] |= (byte) (S[7][row * 16 + column]);
 
-        return  output;
+        return output;
     }
 
     /**
      * 生成16轮子密钥
+     *
      * @param iniKey 初始密钥
      * @return 16轮子密钥
      */
@@ -430,7 +434,8 @@ public class DES {
 
     /**
      * 对64bit长的消息块进行加解密
-     * @param block 64bit长消息块块
+     *
+     * @param block  64bit长消息块块
      * @param subKey 子密钥
      * @return 加解密后的消息块
      */
@@ -475,14 +480,6 @@ public class DES {
         return permute(processedBlock, IIP);
     }
 
-    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, ENCRYPT);
-    }
-
-    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, DECRYPT);
-    }
-
     private static void printBytes(byte[] input) {
         for (int i = 0; i < input.length; i++) {
             System.out.print(byteToBits(input[i]) + " ");
@@ -496,7 +493,6 @@ public class DES {
             buffer.append((b >> (8 - (i + 1)) & 0x0001));
         return buffer.toString();
     }
-
 
     public static void main(String[] args) {
         byte[] input = new byte[8];
@@ -521,5 +517,13 @@ public class DES {
 
         m = processBlock(input2, subKey, mode2);
         printBytes(m);
+    }
+
+    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, ENCRYPT);
+    }
+
+    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, DECRYPT);
     }
 }
