@@ -373,7 +373,7 @@ public class DES {
 
         // S4
         row = (input[2] & BIT2_MASK) >> SHIFT_FOUR_BIT;
-        row |= (output[2] & BIT7_MASK);
+        row |= (input[2] & BIT7_MASK);
 
         column = (input[2] & 0x1E) >> SHIFT_ONE_BIT;
 
@@ -480,6 +480,14 @@ public class DES {
         return permute(processedBlock, IIP);
     }
 
+    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, ENCRYPT);
+    }
+
+    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
+        return processBlock(block, subkey, DECRYPT);
+    }
+
     private static void printBytes(byte[] input) {
         for (int i = 0; i < input.length; i++) {
             System.out.print(byteToBits(input[i]) + " ");
@@ -519,11 +527,4 @@ public class DES {
         printBytes(m);
     }
 
-    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, ENCRYPT);
-    }
-
-    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, DECRYPT);
-    }
 }
