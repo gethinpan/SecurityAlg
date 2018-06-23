@@ -1,24 +1,14 @@
 package edu.seu.security;
 
 import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 
 import static java.lang.System.*;
 
 public class Test {
     public static void main(String[] args) {
-//        BigInteger l = new BigInteger(Long.toString(Long.MAX_VALUE));
-//        out.println(l);
-//        l = l.add(BigInteger.ONE);
-//        out.println(l);
-//        l = l.shiftLeft(3);
-//        out.println(l);
-        byte[] out = new byte[8];
-        long[] in = {Long.MAX_VALUE};
-        l2bBig(in, 0, out, 0, 8);
-        printByteArray(out);
-        out[0] = (byte) 0xff;
-        b2lBig(out, 0, in, 0, 1);
-        System.out.println(in[0] ^ -1L);
+        KeyPairGenerator
     }
 
     private static void printByteArray(byte[] array) {
