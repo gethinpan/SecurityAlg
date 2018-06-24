@@ -1,5 +1,6 @@
 package edu.seu.security;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -7,8 +8,15 @@ import java.security.KeyPairGenerator;
 import static java.lang.System.*;
 
 public class Test {
-    public static void main(String[] args) {
-        KeyPairGenerator
+    public static void main(String[] args) throws UnsupportedEncodingException {
+        RSAKey key = new RSAKey(2048);
+        RSAKey.KeyPair keyPair = key.generateKeyPair();
+        String rawMsg = "go fuck yourself";
+        byte[] msg = rawMsg.getBytes("UTF-8");
+        byte[] c = RSA.encrypt(msg, keyPair.getPublicKey());
+        System.out.println(new String(c, "UTF-8"));
+        byte[] m = RSA.decrypt(c, keyPair.getPrivateKey());
+        System.out.println(new String(m, "UTF-8"));
     }
 
     private static void printByteArray(byte[] array) {

@@ -246,7 +246,7 @@ public class DES {
     /**
      * 执行置换操作
      *
-     * @param bytes byte数组
+     * @param input byte数组
      * @param p     置换操作表
      * @return 置换后的byte数组
      */

@@ -16,8 +16,16 @@ public class RSAKey {
     // RSA算法中模数n的bit位数
     private int keySize;
 
+    /**
+     *
+     * @param keySize 建议大小2048位
+     */
     public RSAKey(int keySize) {
         this.keySize = keySize;
+    }
+
+    public RSAKey() {
+        this.keySize = 2048;
     }
 
     public KeyPair generateKeyPair() {
