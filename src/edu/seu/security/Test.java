@@ -8,15 +8,32 @@ import java.security.KeyPairGenerator;
 import static java.lang.System.*;
 
 public class Test {
-    public static void main(String[] args) throws UnsupportedEncodingException {
+    public static void main(String[] args) throws Exception {
         RSAKey key = new RSAKey(2048);
         RSAKey.KeyPair keyPair = key.generateKeyPair();
-        String rawMsg = "go fuck yourself";
+        String rawMsg = "我是万王之王" +
+                "功业盖物,强者折服”" +
+                "此外，荡然无物" +
+                "废墟四周，唯余黄沙莽莽" +
+                "寂寞荒凉，伸展四方。" +
+                "我是万王之王" +
+                "功业盖物,强者折服”" +
+                "此外，荡然无物" +
+                "废墟四周，唯余黄沙莽莽" +
+                "寂寞荒凉，伸展四方。" +
+                "我是万王之王" +
+                "功业盖物,强者折服”" +
+                "此外，荡然无物" +
+                "废墟四周，唯余黄沙莽莽" +
+                "寂寞荒凉，伸展四方。";
         byte[] msg = rawMsg.getBytes("UTF-8");
-        byte[] c = RSA.encrypt(msg, keyPair.getPublicKey());
-        System.out.println(new String(c, "UTF-8"));
-        byte[] m = RSA.decrypt(c, keyPair.getPrivateKey());
-        System.out.println(new String(m, "UTF-8"));
+        printByteArray(msg);
+        RSA rsa = new RSA(3, keyPair.getPrivateKey());
+        byte[] encrypted = rsa.process(msg);
+        printByteArray(encrypted);
+        RSA drsa = new RSA(4, keyPair.getPublicKey());
+        byte[] decrypted = drsa.process(encrypted);
+        printByteArray(decrypted);
     }
 
     private static void printByteArray(byte[] array) {
