@@ -13,6 +13,9 @@ public class MyIconButton extends JButton {
         this.iconEnable = iconEnable;
         this.iconDisable = iconDisable;
         this.tip = tip;
+
+        initialize();
+        setUp();
     }
 
     /**

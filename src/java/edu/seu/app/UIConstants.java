@@ -28,7 +28,7 @@ public class UIConstants {
     // 普通字体
     public final static Font FONT_NORMAL = new Font("微软雅黑", 0, 13);
     // radio字体
-    public final static Font FONT_RADIO = new Font("微软雅黑", 0, 15);
+    public final static Font FONT_RADIO = new Font("微软雅黑", 0, 20);
 
     /**
      * 工具栏图标
