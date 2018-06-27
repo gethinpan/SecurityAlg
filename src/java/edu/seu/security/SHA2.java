@@ -32,6 +32,10 @@ public class SHA2 {
             0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
+    public static final int SHA224_LENGTH = 28;
+
+    public static final int SHA256_LENGTH = 32;
+
     // 轮数
     private static final int ROUND = 64;
     // 一次处理块长度

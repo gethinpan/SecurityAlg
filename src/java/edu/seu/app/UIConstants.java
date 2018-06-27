@@ -34,10 +34,29 @@ public class UIConstants {
      * 工具栏图标
      */
     public static final ImageIcon ICON_KEY_PARAMETER = new ImageIcon(AppMainWindow.class.getResource("/icon/key.png"));
+    public static final ImageIcon ICON_KEY_PARAMETER_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/key.png"));
     public static final ImageIcon ICON_SEND = new ImageIcon(AppMainWindow.class.getResource("/icon/send.png"));
+    public static final ImageIcon ICON_SEND_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/send.png"));
     public static final ImageIcon ICON_RECEIVE = new ImageIcon(AppMainWindow.class.getResource("/icon/receive.png"));
+    public static final ImageIcon ICON_RECEIVE_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/receive.png"));
+    public static final ImageIcon ICON_SETTING = new ImageIcon(AppMainWindow.class.getResource("/icon/setting.png"));
+    public static final ImageIcon ICON_SETTING_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/settingEnable.png"));
 
-    public static final ImageIcon ICON_SAVE = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButton.png"));
+    public static final ImageIcon ICON_SAVE_BUTTON = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButton.png"));
+    public static final ImageIcon ICON_SAVE_BUTTON_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButtonEnable.png"));
+    public static final ImageIcon ICON_SAVE_BUTTON_DISABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButtonDisable.png"));
+
+    public static final ImageIcon ICON_SEND_BUTTON = new ImageIcon(AppMainWindow.class.getResource("/icon/sendButton.png"));
+    public static final ImageIcon ICON_SEND_BUTTON_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/sendButtonEnable.png"));
+    public static final ImageIcon ICON_SEND_BUTTON_DISABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/sendButtonDisable.png"));
+
+    public static final ImageIcon ICON_DECRYPT_BUTTON = new ImageIcon(AppMainWindow.class.getResource("/icon/decryptButton.png"));
+    public static final ImageIcon ICON_DECRYPT_BUTTON_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/decryptButtonEnable.png"));
+    public static final ImageIcon ICON_DECRYPT_BUTTON_DISABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/decryptButtonDisable.png"));
+
+    public static final ImageIcon ICON_AUTH_BUTTON = new ImageIcon(AppMainWindow.class.getResource("/icon/authButton.png"));
+    public static final ImageIcon ICON_AUTH_BUTTON_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/authButtonEnable.png"));
+    public static final ImageIcon ICON_AUTH_BUTTON_DISABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/authButtonDisable.png"));
 
     /**
      * 样式布局相关

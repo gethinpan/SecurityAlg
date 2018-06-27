@@ -37,6 +37,8 @@ public class MD5 {
 
     // md5一次处理字节长度
     private static final int BLOCK_SIZE = 64;
+    //md5消息摘要字节长度
+    public static final int MD5_LENGTH = 16;
 
     // 计算使用的四个寄存器值
     private int state[] = new int[4];

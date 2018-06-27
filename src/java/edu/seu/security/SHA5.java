@@ -43,6 +43,9 @@ public class SHA5 {
             0x5FCB6FAB3AD6FAECL, 0x6C44198C4A475817L
     };
 
+    public static final int SHA384_LENGTH = 48;
+    public static final int SHA512_LENGTH = 64;
+
     // 运算轮数
     private static final int ROUND = 80;
     // 一次处理块长度

@@ -98,6 +98,12 @@ public class AES {
             {0x0B, 0x0D, 0x09, 0x0E}
     };
 
+    private byte[][][] subkey;
+
+    public AES(byte[] iniKey) {
+        subkey = keyExpansions(iniKey);
+    }
+
     /**
      * GF(2^8)域上的乘法
      *
@@ -231,7 +237,7 @@ public class AES {
      * @param iniKey 16 bytes initial key
      * @return 11 round sub key
      */
-    private static byte[][][] keyExpansions(byte[] iniKey) {
+    private byte[][][] keyExpansions(byte[] iniKey) {
         byte[][][] subkey = new byte[11][4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -274,10 +280,9 @@ public class AES {
      * 对16 bytes的消息块进行aes加密
      *
      * @param block  16 bytes消息块
-     * @param subkey 子密钥
      * @return
      */
-    private static byte[] encryptBlock(byte[] block, byte[][][] subkey) {
+    private byte[] encryptBlock(byte[] block) {
         byte[] output = new byte[block.length];
         byte[][] state = new byte[4][4];
         for (int i = 0; i < 4; i++) {
@@ -316,7 +321,7 @@ public class AES {
         return output;
     }
 
-    private static byte[] decryptBlock(byte[] block, byte[][][] subkey) {
+    private byte[] decryptBlock(byte[] block) {
         byte[] output = new byte[block.length];
         byte[][] state = new byte[4][4];
         for (int i = 0; i < 4; i++) {
@@ -355,6 +360,64 @@ public class AES {
         return output;
     }
 
+    public byte[] encrypt(byte[] input) {
+        int partLen = 16;
+        int len = input.length;
+        int number = (int) Math.ceil((double) len / partLen);
+        int mod = len % partLen;
+
+        byte[] output;
+        byte[] tempInput;
+        if (mod == 0) {
+            tempInput = new byte[number * partLen + 16];
+            System.arraycopy(input, 0, tempInput, 0, len);
+            for (int i = 0; i < partLen; i++) {
+                tempInput[len + i] = (byte) partLen;
+            }
+            output = new byte[number * partLen + partLen];
+        } else {
+            tempInput = new byte[number * partLen];
+            System.arraycopy(input, 0, tempInput, 0, len);
+            for (int i = 0; i < partLen - mod; i++) {
+                tempInput[len + i] = (byte) (partLen - mod);
+            }
+            output = new byte[number * partLen];
+        }
+
+        for (int i = 0; i < (output.length / partLen); i++) {
+            byte[] temp = new byte[partLen];
+            System.arraycopy(tempInput, i * partLen, temp, 0, partLen);
+            System.arraycopy(encryptBlock(temp), 0, output, i * partLen, partLen);
+        }
+
+        return output;
+    }
+
+    public byte[] decrypt(byte[] input) {
+        int len = input.length;
+        int partLen = 16;
+        int number = len / partLen;
+
+
+        byte[] tempOutput = new byte[len];
+        byte[] output;
+
+        for (int i = 0; i < number; i++) {
+            byte[] temp = new byte[partLen];
+            System.arraycopy(input, i * partLen, temp, 0, partLen);
+            System.arraycopy(decryptBlock(temp), 0, tempOutput, i * partLen, partLen);
+        }
+        if (tempOutput[len - 1] == (byte)partLen) {
+            output = new byte[len - partLen];
+            System.arraycopy(tempOutput, 0, output, 0, len - partLen);
+        } else {
+            int x = tempOutput[len - 1];
+            output = new byte[len - x];
+            System.arraycopy(tempOutput, 0, output, 0, len - x);
+        }
+        return output;
+    }
+
     private static void printByteMatrix(byte[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
@@ -369,52 +432,5 @@ public class AES {
             System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
         }
         System.out.println();
-    }
-
-    public static void main(String[] args) {
-        byte[][] input = {
-                {(byte) 0xEA, 0x04, 0x65, (byte) 0x85},
-                {(byte) 0x83, 0x45, 0x5D, (byte) 0x96},
-                {0x5C, 0x33, (byte) 0x98, (byte) 0xB0},
-                {(byte) 0xF0, 0x2D, (byte) 0xAD, (byte) 0xC5}
-        };
-
-        byte[] message = {
-                (byte) 0xAC, (byte) 0x19, (byte) 0x28, (byte) 0x57,
-                0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
-                0x66, (byte) 0xDC, 0x29, 0x00,
-                (byte) 0xF3, (byte) 0x21, (byte) 0x41, (byte) 0x6A
-        };
-
-        byte[] inikey = {
-                (byte) 0xAC, (byte) 0x19, (byte) 0x28, (byte) 0x57,
-                0x77, (byte) 0xFA, (byte) 0xD1, 0x5C,
-                0x66, (byte) 0xDC, 0x29, 0x00,
-                (byte) 0xF3, (byte) 0x21, (byte) 0x41, (byte) 0x6A
-        };
-
-        byte[][][] subkey = keyExpansions(inikey);
-
-        byte[] output = encryptBlock(message, subkey);
-        printByteArray(output);
-
-        output = decryptBlock(output, subkey);
-        printByteArray(output);
-
-//        byte[][] output = substitute(input, S);
-//        printByteMatrix(output);
-//
-//        System.out.println();
-//
-//        shiftRows(output, 1);
-//        printByteMatrix(output);
-//
-//        System.out.println();
-//        output = maxColumns(output, MAX_COLUMN_MATRIX);
-//        printByteMatrix(output);
-//
-//        System.out.println();
-//        output = addRoundKey(output, subkey);
-//        printByteMatrix(output);
     }
 }

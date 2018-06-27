@@ -194,6 +194,12 @@ public class DES {
             -1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
     };
 
+    private byte[][] subkey;
+
+    public DES(byte[] initKey) {
+        subkey = getSubKey(initKey);
+    }
+
     /**
      * 根据总的bit位置计数值计算byte位置
      *
@@ -250,7 +256,7 @@ public class DES {
      * @param p     置换操作表
      * @return 置换后的byte数组
      */
-    private static byte[] permute(byte[] input, int[] p) {
+    private byte[] permute(byte[] input, int[] p) {
         byte[] output = new byte[p.length / BITS_OF_BYTE];
         for (int i = 0; i < p.length; i++) {
             int bit = getBitFromByteArray(input, p[i]);
@@ -280,7 +286,7 @@ public class DES {
      * @param input
      * @return
      */
-    private static byte[][] divide(byte[] input) {
+    private byte[][] divide(byte[] input) {
         byte[][] output = new byte[2][input.length / 2];
         for (int i = 0; i < input.length / 2; i++) {
             output[0][i] = input[i];
@@ -295,7 +301,7 @@ public class DES {
      * @param masterKey 密钥
      * @param round     轮数
      */
-    private static void shiftKey(byte[] masterKey, int round) {
+    private void shiftKey(byte[] masterKey, int round) {
         int shiftBit1, shiftBit2, mask1, mask2;
         if (KS[round] == 1) {
             shiftBit1 = SHIFT_SEVEN_BIT;
@@ -343,7 +349,7 @@ public class DES {
      * @param input
      * @return
      */
-    private static byte[] sBox(byte[] input) {
+    private byte[] sBox(byte[] input) {
         byte[] output = new byte[4];
         // S1
         int row = (input[0] & BIT0_MASK) >> SHIFT_SIX_BIT;
@@ -422,7 +428,7 @@ public class DES {
      * @param iniKey 初始密钥
      * @return 16轮子密钥
      */
-    private static byte[][] getSubKey(byte[] iniKey) {
+    private byte[][] getSubKey(byte[] iniKey) {
         byte[][] subKey = new byte[16][48];
         byte[] masterKey = permute(iniKey, PC1);
         for (int round = 1; round <= 16; round++) {
@@ -436,10 +442,9 @@ public class DES {
      * 对64bit长的消息块进行加解密
      *
      * @param block  64bit长消息块块
-     * @param subKey 子密钥
      * @return 加解密后的消息块
      */
-    private static byte[] processBlock(byte[] block, byte[][] subkey, String mode) {
+    private byte[] processBlock(byte[] block, String mode) {
         // initial permutation
         byte[] processedBlock = permute(block, IP);
 
@@ -480,51 +485,69 @@ public class DES {
         return permute(processedBlock, IIP);
     }
 
-    private byte[] encryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, ENCRYPT);
+    private byte[] encryptBlock(byte[] block) {
+        return processBlock(block, ENCRYPT);
     }
 
-    private byte[] decryptBlock(byte[] block, byte[][] subkey) {
-        return processBlock(block, subkey, DECRYPT);
+    private byte[] decryptBlock(byte[] block) {
+        return processBlock(block, DECRYPT);
     }
 
-    private static void printBytes(byte[] input) {
-        for (int i = 0; i < input.length; i++) {
-            System.out.print(byteToBits(input[i]) + " ");
+    public byte[] encrypt(byte[] input) {
+        int partLen = 8;
+        int len = input.length;
+        int number = (int) Math.ceil((double) len / partLen);
+        int mod = len % partLen;
+
+        byte[] output;
+        byte[] tempInput;
+        if (mod == 0) {
+            tempInput = new byte[number * partLen + 8];
+            System.arraycopy(input, 0, tempInput, 0, len);
+            for (int i = 0; i < partLen; i++) {
+                tempInput[len + i] = (byte) partLen;
+            }
+            output = new byte[number * partLen + partLen];
+        } else {
+            tempInput = new byte[number * partLen];
+            System.arraycopy(input, 0, tempInput, 0, len);
+            for (int i = 0; i < partLen - mod; i++) {
+                tempInput[len + i] = (byte) (partLen - mod);
+            }
+            output = new byte[number * partLen];
         }
-        System.out.println();
+
+        for (int i = 0; i < (output.length / partLen); i++) {
+            byte[] temp = new byte[partLen];
+            System.arraycopy(tempInput, i * partLen, temp, 0, partLen);
+            System.arraycopy(encryptBlock(temp), 0, output, i * partLen, partLen);
+        }
+
+        return output;
     }
 
-    private static String byteToBits(byte b) {
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < 8; i++)
-            buffer.append((b >> (8 - (i + 1)) & 0x0001));
-        return buffer.toString();
+    public byte[] decrypt(byte[] input) {
+        int len = input.length;
+        int partLen = 8;
+        int number = len / partLen;
+
+
+        byte[] tempOutput = new byte[len];
+        byte[] output;
+
+        for (int i = 0; i < number; i++) {
+            byte[] temp = new byte[partLen];
+            System.arraycopy(input, i * partLen, temp, 0, partLen);
+            System.arraycopy(decryptBlock(temp), 0, tempOutput, i * partLen, partLen);
+        }
+        if (tempOutput[len - 1] == (byte)partLen) {
+            output = new byte[len - partLen];
+            System.arraycopy(tempOutput, 0, output, 0, len - partLen);
+        } else {
+            int x = tempOutput[len - 1];
+            output = new byte[len - x];
+            System.arraycopy(tempOutput, 0, output, 0, len - x);
+        }
+        return output;
     }
-
-    public static void main(String[] args) {
-        byte[] input = new byte[8];
-        input[0] = 0x01;
-        input[1] = 0x23;
-        input[2] = 0x45;
-        input[3] = 0x67;
-        input[4] = (byte) 0x89;
-        input[5] = (byte) 0xAB;
-        input[6] = (byte) 0xCD;
-        input[7] = (byte) 0xEF;
-
-        byte[] input2 = {(byte) 0xCF, 0x28, (byte) 0x8A, 0x05, (byte) 0xDD, 0x1A, 0x4A, (byte) 0x91};
-
-        byte[] key = {0x13, 0x34, 0x57, 0x79, (byte) 0x9B, (byte) 0xBC, (byte) 0xDF, (byte) 0xF1};
-
-        byte[][] subKey = getSubKey(key);
-        String mode = "e";
-        String mode2 = "d";
-        byte[] m = processBlock(input, subKey, mode);
-        printBytes(m);
-
-        m = processBlock(input2, subKey, mode2);
-        printBytes(m);
-    }
-
 }
