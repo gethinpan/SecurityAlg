@@ -127,10 +127,13 @@ public class RSA {
      * @param padded
      * @return
      */
-    private byte[] unpad(byte[] padded) {
+    private byte[] unpad(byte[] padded) throws Exception {
         int index = 2;
-        while (padded[index] != 0) {
+        while (padded[index] != 0 && index < padded.length) {
             index++;
+        }
+        if (index == padded.length) {
+            throw new  Exception("解填充错误");
         }
         index++;
         byte[] date = new byte[padded.length - index];
@@ -169,7 +172,7 @@ public class RSA {
      * @param msg
      * @return
      */
-    public byte[] process(byte[] msg) {
+    public byte[] process(byte[] msg) throws Exception {
         switch (mode) {
             case ENCRYPT:
                 int dateSize = blockSize - 11;

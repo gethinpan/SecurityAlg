@@ -12,7 +12,10 @@ public class UIConstants {
     public static final int MAIN_WINDOW_WIDTH = 885;
     public static final int MAIN_WINDOW_HEIGHT = 636;
 
-    public static final String MAIN_WINDOW_TITLE = "现代密码学仿真器";
+    public static final String MAIN_WINDOW_TITLE = "Data Enc";
+    public static final String VERSION = "v1.0";
+    public static final Image ICON_IMAGE = Toolkit.getDefaultToolkit()
+            .getImage(AppMainWindow.class.getResource("/icon/dataEnc.png"));
 
     // 主窗口背景色
     public static final Color MAIN_WINDOW_BACK_COLOR = Color.WHITE;
@@ -34,13 +37,15 @@ public class UIConstants {
      * 工具栏图标
      */
     public static final ImageIcon ICON_KEY_PARAMETER = new ImageIcon(AppMainWindow.class.getResource("/icon/key.png"));
-    public static final ImageIcon ICON_KEY_PARAMETER_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/key.png"));
+    public static final ImageIcon ICON_KEY_PARAMETER_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/keyEnable.png"));
     public static final ImageIcon ICON_SEND = new ImageIcon(AppMainWindow.class.getResource("/icon/send.png"));
-    public static final ImageIcon ICON_SEND_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/send.png"));
+    public static final ImageIcon ICON_SEND_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/sendEnable.png"));
     public static final ImageIcon ICON_RECEIVE = new ImageIcon(AppMainWindow.class.getResource("/icon/receive.png"));
-    public static final ImageIcon ICON_RECEIVE_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/receive.png"));
+    public static final ImageIcon ICON_RECEIVE_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/receiveEnable.png"));
     public static final ImageIcon ICON_SETTING = new ImageIcon(AppMainWindow.class.getResource("/icon/setting.png"));
     public static final ImageIcon ICON_SETTING_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/settingEnable.png"));
+
+    public static final ImageIcon ICON_DATA_ENC = new ImageIcon(AppMainWindow.class.getResource("/icon/dataEnc.png"));
 
     public static final ImageIcon ICON_SAVE_BUTTON = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButton.png"));
     public static final ImageIcon ICON_SAVE_BUTTON_ENABLE = new ImageIcon(AppMainWindow.class.getResource("/icon/saveButtonEnable.png"));

@@ -98,6 +98,7 @@ public class SendPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String msg = messageArea.getText();
                 AppMainWindow.securityUtil.sendProcess(msg);
+                JOptionPane.showMessageDialog(getParent(),"发送成功！","消息",JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }

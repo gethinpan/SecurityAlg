@@ -1,5 +1,6 @@
 package edu.seu.app.panel;
 
+import edu.seu.app.AppMainWindow;
 import edu.seu.app.MyIconButton;
 import edu.seu.app.SecurityUtil;
 import edu.seu.app.UIConstants;
@@ -53,6 +54,8 @@ public class KeyParameterPanel extends JPanel {
     private void initialize() {
         this.setBackground(UIConstants.MAIN_WINDOW_BACK_COLOR);
         this.setLayout(new BorderLayout());
+        AppMainWindow.securityUtil = new SecurityUtil(symEncAlg,
+                symKeySeed, hashAlg, rsaKeySize1, rsaKeySize2);
     }
 
     private void addComponent() {
@@ -209,7 +212,8 @@ public class KeyParameterPanel extends JPanel {
         user1Parameter.setLineWrap(true);
         Border border1 = BorderFactory.createEtchedBorder();
         user1Parameter.setBorder(border1);
-        user1Parameter.setText("用户A参数如下：");
+        user1Parameter.setText("用户A默认参数如下：\n");
+        user1Parameter.append(AppMainWindow.securityUtil.getParameterInfo(1));
         JScrollPane scroll1 = new JScrollPane();
         scroll1.setBounds(25, 250, 375, 230);
         scroll1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -223,7 +227,8 @@ public class KeyParameterPanel extends JPanel {
         user2Parameter.setLineWrap(true);
         Border border2 = BorderFactory.createEtchedBorder();
         user2Parameter.setBorder(border2);
-        user2Parameter.setText("用户B参数如下：");
+        user2Parameter.setText("用户B默认参数如下：\n");
+        user2Parameter.append(AppMainWindow.securityUtil.getParameterInfo(2));
         JScrollPane scroll2 = new JScrollPane();
         scroll2.setBounds(420, 250, 375, 230);
         scroll2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -340,10 +345,24 @@ public class KeyParameterPanel extends JPanel {
                     symKeySeed = null;
                 } else {
                     symKeySeed = symKeySeedField.getText().trim();
+                    if (symKeySeed.equals("")) {
+                        JOptionPane.showMessageDialog(getParent(),"对称密钥种子不能为空！","提示",JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
                 }
 
                 rsaKeySize1 = rsaModule1Field.getText().trim();
                 rsaKeySize2 = rsaModule2Field.getText().trim();
+
+                if (rsaKeySize1.equals("") || (Integer.parseInt(rsaKeySize1) < 1024)) {
+                    JOptionPane.showMessageDialog(getParent(),"发送方公钥模数长度不符合要求（1024-2048）！","提示",JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                if (rsaKeySize2.equals("") || (Integer.parseInt(rsaKeySize2) < 1024)) {
+                    JOptionPane.showMessageDialog(getParent(),"接收方公钥模数长度不符合要求（1024-2048）！","提示",JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
 
                 securityUtil = new SecurityUtil(symEncAlg, symKeySeed, hashAlg, rsaKeySize1, rsaKeySize2);
 
@@ -352,6 +371,7 @@ public class KeyParameterPanel extends JPanel {
 
                 user2Parameter.setText("用户B参数如下：\n");
                 user2Parameter.append(securityUtil.getParameterInfo(2));
+                JOptionPane.showMessageDialog(getParent(),"加密参数设置成功！","提示",JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }

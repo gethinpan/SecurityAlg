@@ -107,10 +107,23 @@ public class ToolBarPanel extends JPanel {
 
                 AppMainWindow.mainPanelCenter.updateUI();
 
-                if (AppMainWindow.securityUtil.senderMessage != null) {
-                    AppMainWindow.receivePanel.getReceiveArea().
-                            setText(AppMainWindow.securityUtil.senderMessage);
-                }
+                AppMainWindow.receivePanel.getReceiveArea().
+                        setText(AppMainWindow.securityUtil.senderMessage);
+            }
+        });
+
+        buttonSetting.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buttonKeyParameter.setIcon(UIConstants.ICON_KEY_PARAMETER);
+                buttonSend.setIcon(UIConstants.ICON_SEND);
+                buttonReceive.setIcon(UIConstants.ICON_RECEIVE);
+                buttonSetting.setIcon(UIConstants.ICON_SETTING_ENABLE);
+
+                AppMainWindow.mainPanelCenter.removeAll();
+                AppMainWindow.mainPanelCenter.add(AppMainWindow.settingPanel, BorderLayout.CENTER);
+
+                AppMainWindow.mainPanelCenter.updateUI();
             }
         });
     }

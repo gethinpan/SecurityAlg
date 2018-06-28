@@ -1,9 +1,6 @@
 package edu.seu.app;
 
-import edu.seu.app.panel.KeyParameterPanel;
-import edu.seu.app.panel.ReceivePanel;
-import edu.seu.app.panel.SendPanel;
-import edu.seu.app.panel.ToolBarPanel;
+import edu.seu.app.panel.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +14,7 @@ public class AppMainWindow {
     public static KeyParameterPanel keyParameterPanel;
     public static SendPanel sendPanel;
     public static ReceivePanel receivePanel;
+    public static SettingPanel settingPanel;
 
     public static SecurityUtil securityUtil;
 
@@ -25,10 +23,19 @@ public class AppMainWindow {
     }
 
     private void initialize() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         frame = new JFrame();
         frame.setBounds(UIConstants.MAIN_WINDOW_X, UIConstants.MAIN_WINDOW_Y,
                 UIConstants.MAIN_WINDOW_WIDTH, UIConstants.MAIN_WINDOW_HEIGHT);
         frame.setTitle(UIConstants.MAIN_WINDOW_TITLE);
+        frame.setIconImage(UIConstants.ICON_IMAGE);
         frame.setBackground(UIConstants.MAIN_WINDOW_BACK_COLOR);
 
         mainPanel = new JPanel(true);
@@ -39,12 +46,14 @@ public class AppMainWindow {
         keyParameterPanel = new KeyParameterPanel();
         sendPanel = new SendPanel();
         receivePanel = new ReceivePanel();
+        settingPanel = new SettingPanel();
 
         mainPanel.add(toolbar, BorderLayout.WEST);
 
         mainPanelCenter = new JPanel(true);
         mainPanelCenter.setLayout(new BorderLayout());
         mainPanelCenter.add(keyParameterPanel, BorderLayout.CENTER);
+
 
         mainPanel.add(mainPanelCenter, BorderLayout.CENTER);
 

@@ -9,6 +9,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class ReceivePanel extends JPanel {
     private JTextArea receiveArea;
@@ -75,6 +76,10 @@ public class ReceivePanel extends JPanel {
         receiveArea.setBounds(25, 50, 375, 430);
         receiveArea.setLineWrap(true);
         receiveArea.setBorder(border1);
+        JScrollPane scroll1 = new JScrollPane();
+        scroll1.setBounds(25, 50, 375, 430);
+        scroll1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scroll1.setViewportView(receiveArea);
 
         JLabel plaintextLabel = new JLabel("解密后明文如下：");
         plaintextLabel.setFont(UIConstants.FONT_NORMAL);
@@ -89,11 +94,15 @@ public class ReceivePanel extends JPanel {
         plaintextArea.setBounds(420, 50, 375, 430);
         plaintextArea.setLineWrap(true);
         plaintextArea.setBorder(border2);
+        JScrollPane scroll2 = new JScrollPane();
+        scroll2.setBounds(420, 50, 375, 430);
+        scroll2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scroll2.setViewportView(plaintextArea);
 
         panelCenter.add(ciphertextLabel);
-        panelCenter.add(receiveArea);
+        panelCenter.add(scroll1);
         panelCenter.add(plaintextLabel);
-        panelCenter.add(plaintextArea);
+        panelCenter.add(scroll2);
 
         return panelCenter;
     }
@@ -124,6 +133,14 @@ public class ReceivePanel extends JPanel {
                 String msg = receiveArea.getText();
                 String result = AppMainWindow.securityUtil.receiverDecrypt(msg);
                 plaintextArea.setText(result);
+            }
+        });
+
+        authButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String msg = receiveArea.getText();
+                plaintextArea.append(AppMainWindow.securityUtil.receiverVerify(msg));
             }
         });
     }
