@@ -43,9 +43,6 @@ public class SHA5 {
             0x5FCB6FAB3AD6FAECL, 0x6C44198C4A475817L
     };
 
-    public static final int SHA384_LENGTH = 48;
-    public static final int SHA512_LENGTH = 64;
-
     // 运算轮数
     private static final int ROUND = 80;
     // 一次处理块长度
@@ -206,35 +203,6 @@ public class SHA5 {
             System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
         }
         System.out.println();
-    }
-
-    public static void main(String[] args) throws Exception {
-        String s = "卡比是狗";
-        SHA384 sha384 = new SHA384();
-
-
-//        sha384.update(s.getBytes());
-//        printByteArray(sha384.getDigest());
-
-        File file = new File("C:\\Users\\GethinPan\\Desktop\\rfc1321.pdf");
-        FileInputStream in = new FileInputStream(file);
-        byte[] buffer = new byte[2048];
-        while (in.read(buffer) != -1) {
-            sha384.update(buffer);
-        }
-        printByteArray(sha384.getDigest());
-        in.close();
-
-        MessageDigest ssha384 = MessageDigest.getInstance("sha-384");
-//        ssha384.update(s.getBytes());
-//        printByteArray(ssha384.digest());
-
-        in = new FileInputStream(file);
-        while (in.read(buffer) != -1) {
-            ssha384.update(buffer);
-        }
-        printByteArray(ssha384.digest());
-        in.close();
     }
 
     private void reset() {

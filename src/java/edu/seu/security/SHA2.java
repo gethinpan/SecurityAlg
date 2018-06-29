@@ -1,7 +1,5 @@
 package edu.seu.security;
 
-import java.security.MessageDigest;
-
 /**
  * SHA256及SHA224算法实现，参考rfc6234
  * SHA中字节序使用大端序
@@ -32,9 +30,6 @@ public class SHA2 {
             0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
-    public static final int SHA224_LENGTH = 28;
-
-    public static final int SHA256_LENGTH = 32;
 
     // 轮数
     private static final int ROUND = 64;
@@ -206,46 +201,6 @@ public class SHA2 {
             System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
         }
         System.out.println();
-    }
-
-    public static void main(String[] args) throws Exception {
-        SHA224 sha224 = new SHA224();
-        String s = "保证数据的完整性：例如你发送一个100M的文件给你的B，但是你不知道B收到的是否是完整的文件；此时你首先使用摘要算法，" +
-                "如MD5，计算了一个固定长度的摘要，将这个摘要和文件一起发送给B，B接收完文件之后，同样使用MD5计算摘要，如果B计算的结果和你发送给他的摘要结果一致，说明B接收的文件是完整的。";
-//        String s2 = "";
-//        sha224.update(s.getBytes());
-//        byte[] digest = sha224.getDigest();
-//        printByteArray(digest);
-//        sha224.update(s2.getBytes());
-//        printByteArray(sha224.getDigest());
-//
-//        File file = new File("C:\\Users\\GethinPan\\Desktop\\rfc1321.pdf");
-//        FileInputStream in = new FileInputStream(file);
-//        byte[] buffer = new byte[2048];
-//        while (in.read(buffer) != -1) {
-//            sha224.update(buffer);
-//        }
-//        printByteArray(sha224.getDigest());
-//        in.close();
-
-        SHA256 sha256 = new SHA256();
-        sha256.update(s.getBytes());
-        printByteArray(sha256.getDigest());
-
-        MessageDigest ssha224 = MessageDigest.getInstance("sha-224");
-//        ssha224.update(s.getBytes());
-//        printByteArray(ssha224.digest());
-//        ssha224.update(s2.getBytes());
-//        printByteArray(ssha224.digest());
-//        in = new FileInputStream(file);
-//        while (in.read(buffer) != -1) {
-//            ssha224.update(buffer);
-//        }
-//        printByteArray(ssha224.digest());
-
-        MessageDigest ssha256 = MessageDigest.getInstance("sha-256");
-        ssha256.update(s.getBytes());
-        printByteArray(ssha256.digest());
     }
 
     private void reset() {

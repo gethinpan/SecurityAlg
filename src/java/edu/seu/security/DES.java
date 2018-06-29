@@ -281,21 +281,6 @@ public class DES {
     }
 
     /**
-     * 将输入的字节数组分为相等的两部分,仅限能等分的情况
-     *
-     * @param input
-     * @return
-     */
-    private byte[][] divide(byte[] input) {
-        byte[][] output = new byte[2][input.length / 2];
-        for (int i = 0; i < input.length / 2; i++) {
-            output[0][i] = input[i];
-            output[1][i] = input[input.length / 2 + i];
-        }
-        return output;
-    }
-
-    /**
      * 密钥移位
      *
      * @param masterKey 密钥

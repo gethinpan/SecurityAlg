@@ -1,9 +1,5 @@
 package edu.seu.security;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.MessageDigest;
-
 /**
  * MD5 hash算法
  * MD5 uses big-endian convention at bit level, then little-endian convention at byte level
@@ -135,31 +131,6 @@ public class MD5 {
         a += I(b, c, d) + x + ac;
         a = rotateLeft(a, s);
         return a + b;
-    }
-
-    public static void main(String[] args) throws Exception{
-        String s = "保证数据的完整性：例如你发送一个100M的文件给你的B，但是你不知道B收到的是否是完整的文件；此时你首先使用摘要算法，" +
-                "如MD5，计算了一个固定长度的摘要，将这个摘要和文件一起发送给B，B接收完文件之后，同样使用MD5计算摘要，如果B计算的结果和你发送给他的摘要结果一致，说明B接收的文件是完整的。";
-        MD5 md5 = new MD5();
-//        md5.update(s.getBytes());
-//        printByteArray(md5.getDigest());
-        File file = new File("C:\\Users\\GethinPan\\Desktop\\rfc1321.pdf");
-        FileInputStream in = new FileInputStream(file);
-        byte[] buffer = new byte[2048];
-        while (in.read(buffer) != -1) {
-            md5.update(buffer);
-        }
-        printByteArray(md5.getDigest());
-        in.close();
-
-        MessageDigest smd5= MessageDigest.getInstance("md5");
-//        smd5.update(s.getBytes());
-//        printByteArray(smd5.digest());
-        in = new FileInputStream(file);
-        while (in.read(buffer) != -1) {
-            smd5.update(buffer);
-        }
-        printByteArray(smd5.digest());
     }
 
     public void update(byte[] input) {
@@ -315,13 +286,6 @@ public class MD5 {
             output[i] = ((input[j] & 0xff)) | ((input[j + 1] & 0xff) << 8) |
                     ((input[j + 2] & 0xff) << 16) | ((input[j + 3] & 0xff) << 24);
         }
-    }
-
-    private static void printByteArray(byte[] array) {
-        for (int i = 0; i < array.length; i++) {
-            System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
-        }
-        System.out.println();
     }
 
     /**

@@ -417,20 +417,4 @@ public class AES {
         }
         return output;
     }
-
-    private static void printByteMatrix(byte[][] matrix) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                System.out.print("0x" + Integer.toHexString(matrix[i][j] & 0xFF) + " ");
-            }
-            System.out.println();
-        }
-    }
-
-    private static void printByteArray(byte[] array) {
-        for (int i = 0; i < array.length; i++) {
-            System.out.print("0x" + Integer.toHexString(array[i] & 0xFF) + " ");
-        }
-        System.out.println();
-    }
 }
