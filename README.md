@@ -76,7 +76,7 @@
   ### 速览
   ![参数设定界面](https://github.com/gethinpan/SecurityAlg/blob/master/src/resource/image/parameterPanel.png)
   ![加密发送界面](https://github.com/gethinpan/SecurityAlg/blob/master/src/resource/image/sendPanel.png)
-  ![接收解密界面](https://github.com/gethinpan/SecurityAlg/blob/master/src/resource/image/reveivePanel.png)
+  ![接收解密界面](https://github.com/gethinpan/SecurityAlg/blob/master/src/resource/image/receivePanel.png)
   
   ### 使用说明
   >1. 在加密参数设定界面选择并输入安全算法参数，也可使用系统默认的参数；
